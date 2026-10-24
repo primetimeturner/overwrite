@@ -357,7 +357,7 @@ body.touchmode #carrying{bottom:auto;top:30%}
       <div class="mapdots" id="mapDots" aria-hidden="true"></div>
       <h2 class="sec">Choose your build</h2>
       <div id="classes" class="classes"></div>
-      <div class="row"><button id="play" class="play">Enter arena</button><span class="hintline"><span class="hint" id="kbhint">Build v1.3 · Oct 24, 2026 · mouse and keyboard or controller.</span><button class="iconbtn" id="charBtn" title="Customize your character" aria-label="Customize your character"></button></span></div>
+      <div class="row"><button id="play" class="play">Enter arena</button><span class="hintline"><span class="hint" id="kbhint">Build v1.4 · Oct 24, 2026 · mouse and keyboard or controller.</span><button class="iconbtn" id="charBtn" title="Customize your character" aria-label="Customize your character"></button></span></div>
       <h2 class="sec" style="margin-top:26px">Play with friends</h2>
       <div class="party">
         <label class="pfield"><span>Your name</span><input id="pname" type="text" maxlength="16" placeholder="Contestant" autocomplete="nickname" spellcheck="false"></label>
@@ -474,7 +474,7 @@ body.touchmode #carrying{bottom:auto;top:30%}
 <script>
 (function(){
 'use strict';
-const VERSION='1.3';
+const VERSION='1.4';
 let DEBUG=location.hash==='#debug';
 const dbgLog=[];
 addEventListener('hashchange',()=>{ if(location.hash==='#debug') DEBUG=true; });
@@ -1839,49 +1839,106 @@ function audioInit(){
   }catch(e){ AU.ctx=null; }
 }
 /* =====================================================================
-   MENU MUSIC: "Signal Lost", an original synth loop played live by the
-   Web Audio API. 32 bars that build in four sections:
-   pad + arp, then drums, then bass and a four-on-the-floor kick, then the lead.
-   Plays on the home screen and in party lobbies, fades out when a match starts.
+   MENU MUSIC: three original synth tracks played live by the Web Audio API.
+   They rotate on the home screen and in party lobbies, and fade out when a
+   match starts. Each track is 32 bars that build in four 8-bar sections.
+     1. Signal Lost: moody synthwave in A minor, 98 BPM
+     2. Overclock: driving darksynth in D minor, 124 BPM
+     3. Afterhours: slow late-night lo-fi in E minor, 84 BPM
    ===================================================================== */
-const MUS={gain:null,delay:null,padF:null,playing:false,next:0,step:0,bpm:98,timer:0};
+const MUS={gain:null,delay:null,fb:null,padF:null,playing:false,next:0,step:0,trk:0,played:0,timer:0};
 const mtof=m=>440*Math.pow(2,(m-69)/12);
-// A minor: Am, F, C, G
-const MUS_CH=[[57,60,64],[57,60,65],[55,60,64],[55,59,62]], MUS_BASS=[45,41,48,43];
-const MUS_ARP=[0,1,2,3,2,1,0,2, 1,2,3,4,3,2,1,2];
-const MUS_LEAD=[[[0,76,4],[4,74,2],[6,72,6],[12,71,4]],[[0,72,6],[6,69,2],[8,72,4],[12,74,4]],[[0,76,6],[6,74,2],[8,72,8]],[[0,74,4],[4,71,4],[8,67,4],[12,71,4]]];
 function musicSetup(){ const c=AU.ctx; if(!c||MUS.gain) return;
   MUS.gain=c.createGain(); MUS.gain.gain.value=0; MUS.gain.connect(AU.master);
-  MUS.delay=c.createDelay(1); MUS.delay.delayTime.value=60/MUS.bpm*.75; const fb=c.createGain(); fb.gain.value=.38; const dl=c.createBiquadFilter(); dl.type='lowpass'; dl.frequency.value=2400;
-  MUS.delay.connect(dl); dl.connect(fb); fb.connect(MUS.delay); dl.connect(MUS.gain);
+  MUS.delay=c.createDelay(1.5); MUS.fb=c.createGain(); const dl=c.createBiquadFilter(); dl.type='lowpass'; dl.frequency.value=2400;
+  MUS.delay.connect(dl); dl.connect(MUS.fb); MUS.fb.connect(MUS.delay); dl.connect(MUS.gain);
   MUS.padF=c.createBiquadFilter(); MUS.padF.type='lowpass'; MUS.padF.frequency.value=1100; MUS.padF.Q.value=1.5; MUS.padF.connect(MUS.gain);
   const lfo=c.createOscillator(), lg=c.createGain(); lfo.frequency.value=.06; lg.gain.value=600; lfo.connect(lg); lg.connect(MUS.padF.frequency); lfo.start();
-  MUS.timer=setInterval(musicSched,40); }
+  musicUseTrack(0,0); MUS.timer=setInterval(musicSched,40); }
+// echo settings change with the song
+function musicUseTrack(n,t){ MUS.trk=n; const T=TRACKS[n]; MUS.delay.delayTime.setValueAtTime(60/T.bpm*T.echo,t); MUS.fb.gain.setValueAtTime(T.fb,t); }
 function mTone(t,f,dur,vol,type,cut,dest){ const c=AU.ctx,o=c.createOscillator(),g=c.createGain(); o.type=type; o.frequency.value=f; let n=o;
   if(cut){ const fl=c.createBiquadFilter(); fl.type='lowpass'; fl.Q.value=4; fl.frequency.setValueAtTime(cut,t); fl.frequency.exponentialRampToValueAtTime(Math.max(150,cut*.2),t+dur); o.connect(fl); n=fl; }
   n.connect(g); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.006); g.gain.exponentialRampToValueAtTime(.0008,t+dur); g.connect(dest||MUS.gain); o.start(t); o.stop(t+dur+.05); return g; }
 function mNoise(t,type,freq,q,dur,vol){ const c=AU.ctx,g=c.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0008,t+dur); g.connect(MUS.gain); noiseBurst(g,type,freq,q,t,dur); }
-function musicStep(s,t,sp){ const c=AU.ctx, i=s%16, bar=Math.floor(s/16)%32, sec=bar>>3, ch=bar%4, chord=MUS_CH[ch];
-  if(i===0){ const L=sp*16+.6; for(const m of chord) for(const d of [-7,7]){ const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth'; o.frequency.value=mtof(m); o.detune.value=d;
-      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.028,t+.5); g.gain.setValueAtTime(.028,t+L-.6); g.gain.linearRampToValueAtTime(0,t+L); o.connect(g); g.connect(MUS.padF); o.start(t); o.stop(t+L+.05); } }
-  // arp, through the echo
-  const an=MUS_ARP[i], am=an<3?chord[an]+12:chord[an-3]+24, av=sec===0?.035:.045;
+function mKick(t,vol,f0,dec){ const c=AU.ctx,o=c.createOscillator(),g=c.createGain(); o.frequency.setValueAtTime(f0||140,t); o.frequency.exponentialRampToValueAtTime(42,t+.13);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+(dec||.32)); o.connect(g); g.connect(MUS.gain); o.start(t); o.stop(t+(dec||.32)+.03); }
+function mPad(t,chord,L,vol){ const c=AU.ctx; for(const m of chord) for(const d of [-7,7]){ const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth'; o.frequency.value=mtof(m); o.detune.value=d;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.5); g.gain.setValueAtTime(vol,t+L-.6); g.gain.linearRampToValueAtTime(0,t+L); o.connect(g); g.connect(MUS.padF); o.start(t); o.stop(t+L+.05); } }
+
+// ---- 1. Signal Lost (A minor: Am, F, C, G) ----
+const SL_CH=[[57,60,64],[57,60,65],[55,60,64],[55,59,62]], SL_BASS=[45,41,48,43];
+const SL_ARP=[0,1,2,3,2,1,0,2, 1,2,3,4,3,2,1,2];
+const SL_LEAD=[[[0,76,4],[4,74,2],[6,72,6],[12,71,4]],[[0,72,6],[6,69,2],[8,72,4],[12,74,4]],[[0,76,6],[6,74,2],[8,72,8]],[[0,74,4],[4,71,4],[8,67,4],[12,71,4]]];
+function stepSignalLost(s,t,sp){ const i=s%16, bar=Math.floor(s/16)%32, sec=bar>>3, ch=bar%4, chord=SL_CH[ch];
+  if(i===0) mPad(t,chord,sp*16+.6,.028);
+  const an=SL_ARP[i], am=an<3?chord[an]+12:chord[an-3]+24, av=sec===0?.035:.045;
   const ag=mTone(t,mtof(am),sp*1.6,av,'square',sec===0?1600:2600); ag.connect(MUS.delay);
   if(sec>=1){
-    if(i%8===0||(sec>=2&&i%4===0)){ const o=c.createOscillator(),g=c.createGain(); o.frequency.setValueAtTime(140,t); o.frequency.exponentialRampToValueAtTime(42,t+.13);
-      g.gain.setValueAtTime(.55,t); g.gain.exponentialRampToValueAtTime(.001,t+.32); o.connect(g); g.connect(MUS.gain); o.start(t); o.stop(t+.35); }
+    if(i%8===0||(sec>=2&&i%4===0)) mKick(t,.55);
     if(i%4===2) mNoise(t,'highpass',8000,.7,.045,.07);
     if(sec>=2&&(i===4||i===12)) mNoise(t,'bandpass',1600,.9,.16,.16);
   }
-  if(sec>=2&&i%2===0){ const r=MUS_BASS[ch]+(i%4===2?12:0); mTone(t,mtof(r),sp*1.8,.13,'sawtooth',900); }
-  if(sec===3) for(const [st,m,len] of MUS_LEAD[ch]) if(st===i){ const g=mTone(t,mtof(m),sp*len,.05,'triangle',0); g.connect(MUS.delay); const g2=mTone(t,mtof(m)*1.003,sp*len,.025,'sawtooth',3000); }
+  if(sec>=2&&i%2===0){ const r=SL_BASS[ch]+(i%4===2?12:0); mTone(t,mtof(r),sp*1.8,.13,'sawtooth',900); }
+  if(sec===3) for(const [st,m,len] of SL_LEAD[ch]) if(st===i){ const g=mTone(t,mtof(m),sp*len,.05,'triangle',0); g.connect(MUS.delay); mTone(t,mtof(m)*1.003,sp*len,.025,'sawtooth',3000); }
 }
-function musicSched(){ if(!MUS.playing||!AU.ctx||AU.ctx.state!=='running') return; const c=AU.ctx, sp=60/MUS.bpm/4;
+
+// ---- 2. Overclock (D minor: Dm, Bb, Gm, A) ----
+const OC_CH=[[62,65,69],[62,65,70],[62,67,70],[61,64,69]], OC_BASS=[38,34,43,45];
+// riff: semitones above the bass root (null = rest); T marks the chord's third
+const OC_RIFF=[0,null,7,null,12,null,7,'T', 0,null,7,null,12,'T2',12,7];
+function stepOverclock(s,t,sp){ const c=AU.ctx, i=s%16, bar=Math.floor(s/16)%32, sec=bar>>3, ch=bar%4, chord=OC_CH[ch], root=OC_BASS[ch], third=ch===3?4:3;
+  // pulsing 16th bass that opens up through the intro, and drops out under each kick
+  if(!(sec>=1&&i%4===0)) mTone(t,mtof(root),sp*.85,i%4===2?.1:.075,'sawtooth',sec===0?260+bar*120:1250);
+  if(sec>=1&&i%4===0){ mKick(t,.6,165,.26); mTone(t,mtof(root),sp*.6,.05,'sawtooth',700); }
+  mNoise(t,'highpass',9000,.7,.03,sec===0?.025:(i%2?.03:.045));
+  if(sec>=2&&i%4===2) mNoise(t,'highpass',6000,.6,.14,.05);
+  if(sec>=2&&(i===4||i===12)){ mNoise(t,'bandpass',1500,.8,.18,.17); mNoise(t,'highpass',3000,.5,.05,.06); }
+  // offbeat chord stabs through the echo
+  if(sec>=1&&i%4===2) for(const m of chord){ const g=mTone(t,mtof(m+12),sp*.9,.026,'square',2600); g.connect(MUS.delay); }
+  if(sec>=2){ const r=OC_RIFF[i]; if(r!==null){ const off=r==='T'?12+third:r==='T2'?24+third:r; mTone(t,mtof(root+24+off),sp*.9,sec===3?.05:.038,'sawtooth',sec===3?4200:3000);
+    if(sec===3) mTone(t,mtof(root+36+off),sp*.7,.018,'square',3000); } }
+  if(sec===3&&i===0) mPad(t,chord.map(m=>m-12),sp*16+.4,.02);
+  // riser into the loop point
+  if(bar===31&&i===0){ const g=c.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.09,t+sp*15); g.gain.linearRampToValueAtTime(0,t+sp*16); g.connect(MUS.gain);
+    const f=noiseBurst(g,'bandpass',400,2,t,sp*16); f.frequency.setValueAtTime(400,t); f.frequency.exponentialRampToValueAtTime(7000,t+sp*16); }
+}
+
+// ---- 3. Afterhours (E minor: Em9, Cmaj7, Am7, Bsus) ----
+const AH_CH=[[52,55,59,62,66],[48,52,55,59,64],[45,48,52,55,60],[47,52,54,57]], AH_BASS=[40,36,45,35];
+const AH_MEL=[[[0,71,6],[6,74,2],[8,76,8]],[[2,79,4],[8,76,4],[12,74,4]],[[0,72,6],[8,71,4],[12,69,4]],[[0,71,8],[10,66,6]]];
+function mKeys(t,m,dur,vol){ mTone(t,mtof(m),dur,vol,'sine',0); mTone(t,mtof(m)*2.002,dur*.5,vol*.25,'triangle',0); }
+function mBell(t,m,dur,vol){ const a=mTone(t,mtof(m),dur,vol,'sine',0), b=mTone(t,mtof(m)*3.01,dur*.35,vol*.35,'sine',0); a.connect(MUS.delay); b.connect(MUS.delay); }
+function stepAfterhours(s,t,sp){ const i=s%16, bar=Math.floor(s/16)%32, sec=bar>>3, ch=bar%4, chord=AH_CH[ch], sw=i%4===2?sp*.28:0;
+  // tape crackle
+  if(Math.random()<.35) mNoise(t+Math.random()*sp,'highpass',3500,.5,.006,.02+Math.random()*.03);
+  // electric piano comping
+  if(i===0) for(const m of chord) mKeys(t,m,sp*7,.042);
+  if(i===6) for(const m of chord.slice(-3)) mKeys(t+sw,m,sp*4,.034);
+  if(sec>=1&&i===11) for(const m of chord.slice(-3)) mKeys(t,m,sp*3,.02);
+  if(sec>=1){
+    if(i===0||i===10) { mTone(t,mtof(AH_BASS[ch]),sp*(i===0?7:5),.22,'sine',0); mTone(t,mtof(AH_BASS[ch]+12),sp*2,.045,'triangle',0); }
+    if(i===0||i===10) mKick(t,.5,120,.36); if(i===7) mKick(t,.25,120,.3);
+    if(i===4||i===12){ mNoise(t,'bandpass',1800,.8,.2,.13); mTone(t,190,.08,.05,'triangle',0); }
+    if(i%2===0) mNoise(t+sw,'highpass',7500,.7,.04,i%4===0?.045:.03);
+  }
+  if(sec>=2) for(const [st,m,len] of AH_MEL[ch]) if(st===i) mBell(t,m+(sec===3&&bar%2?12:0),sp*len+.3,.06);
+  if(sec===3&&i===0) mPad(t,chord.slice(0,3),sp*16+.6,.014);
+}
+
+const TRACKS=[{name:'Signal Lost',bpm:98,echo:.75,fb:.38,step:stepSignalLost},{name:'Overclock',bpm:124,echo:.5,fb:.3,step:stepOverclock},{name:'Afterhours',bpm:84,echo:.75,fb:.35,step:stepAfterhours}];
+const TRACK_BARS=32;
+function musicStep(s,t,sp){ TRACKS[MUS.trk].step(s,t,sp); }
+function musicSched(){ if(!MUS.playing||!AU.ctx||AU.ctx.state!=='running') return; const c=AU.ctx;
   if(MUS.next<c.currentTime) MUS.next=c.currentTime+.06;
-  while(MUS.next<c.currentTime+.18){ musicStep(MUS.step,MUS.next,sp); MUS.step++; MUS.next+=sp; } }
+  while(MUS.next<c.currentTime+.18){ let sp=60/TRACKS[MUS.trk].bpm/4;
+    // song over: short gap, then the next one in the rotation
+    if(MUS.step>=TRACK_BARS*16){ MUS.next+=1.4; MUS.step=0; musicUseTrack((MUS.trk+1)%TRACKS.length,MUS.next); MUS.played++; sp=60/TRACKS[MUS.trk].bpm/4; continue; }
+    musicStep(MUS.step,MUS.next,sp); MUS.step++; MUS.next+=sp; } }
 function musicTick(){ if(!AU.ctx||!MUS.gain) return;
   const want=SET.music>0&&(state==='menu'||state==='lobby')&&!document.hidden, c=AU.ctx, g=MUS.gain.gain, target=SET.music;
-  if(want&&!MUS.playing){ MUS.playing=true; MUS.step=0; MUS.next=0; g.cancelScheduledValues(c.currentTime); g.setValueAtTime(g.value,c.currentTime); g.linearRampToValueAtTime(target,c.currentTime+2.5); }
+  // each visit to the menu starts the next song, so you don't always hear the same intro
+  if(want&&!MUS.playing){ MUS.playing=true; MUS.step=0; MUS.next=c.currentTime+.1; musicUseTrack(MUS.played%TRACKS.length,c.currentTime); MUS.played++; g.cancelScheduledValues(c.currentTime); g.setValueAtTime(g.value,c.currentTime); g.linearRampToValueAtTime(target,c.currentTime+2.5); }
   else if(!want&&MUS.playing){ MUS.playing=false; g.cancelScheduledValues(c.currentTime); g.setValueAtTime(g.value,c.currentTime); g.linearRampToValueAtTime(0,c.currentTime+(state==='playing'?1.2:.4)); }
 }
 function musicLevel(){ if(MUS.playing&&AU.ctx){ const g=MUS.gain.gain, t=AU.ctx.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(SET.music,t); } }
@@ -3913,7 +3970,7 @@ renderMaps(); renderClasses(); renderBalance(); initSettings(); initParty(); ini
 loadMap(SET.map); $('loading').hidden=true;
 if(document.fonts&&document.fonts.ready&&document.fonts.ready.then) document.fonts.ready.then(()=>{ if(state==='menu') buildEnvironment(); });
 resize(); requestAnimationFrame(frame);
-window.OVERWRITE={get state(){return state;},set state(v){state=v;},start,step,newMatch,loadMap,actors,OBJ,TEAMS,grid,I,explode,GADGETS,chunks,get player(){return player;},get MAP(){return MAP;},MAPS,MAT,structuralPass,keys,edges,findPath,walkable,onLadder,SET,collides,NET,startMatch,hostParty,joinParty,hostStart,leaveParty,worldHash,frame:t=>frame(t),get matchT(){return matchT;},set matchT(v){matchT=v;},$,cleanName,fireWeapon,rewindActors,restoreActors,clientStep,TEAMS_:TEAMS,get now(){return now;},themes:{THEMES,applyTheme},music:{MUS,AU,musicStep,musicSetup},touch:{TOUCH,updateTouchHUD,get inputMode(){return inputMode;}},binds:{startCapture,assignKb,assignPad,canon,bindLabel,DEF_PAD},DIFF,gear:{weaponWithGear,HOME_OPTIC,OPTICS,makeGun,WEAPONS,opticMag}};
+window.OVERWRITE={get state(){return state;},set state(v){state=v;},start,step,newMatch,loadMap,actors,OBJ,TEAMS,grid,I,explode,GADGETS,chunks,get player(){return player;},get MAP(){return MAP;},MAPS,MAT,structuralPass,keys,edges,findPath,walkable,onLadder,SET,collides,NET,startMatch,hostParty,joinParty,hostStart,leaveParty,worldHash,frame:t=>frame(t),get matchT(){return matchT;},set matchT(v){matchT=v;},$,cleanName,fireWeapon,rewindActors,restoreActors,clientStep,TEAMS_:TEAMS,get now(){return now;},themes:{THEMES,applyTheme},music:{MUS,AU,musicStep,musicSetup,musicUseTrack,TRACKS},touch:{TOUCH,updateTouchHUD,get inputMode(){return inputMode;}},binds:{startCapture,assignKb,assignPad,canon,bindLabel,DEF_PAD},DIFF,gear:{weaponWithGear,HOME_OPTIC,OPTICS,makeGun,WEAPONS,opticMag}};
 })();
 </script>
 </body>
