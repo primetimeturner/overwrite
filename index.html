@@ -87,8 +87,30 @@ button:focus-visible,input:focus-visible,select:focus-visible,.card:focus-visibl
 /* keeps the character button beside the build line so it never wraps onto a line by itself */
 .hintline{display:inline-flex;align-items:center;gap:16px;min-width:0}
 .hintline .iconbtn{flex:none}
+/* character button: bottom-right corner, level with the bottom of Join and the right edge of the info panel (wide screens) */
+.menu-grid{position:relative}
+@media (min-width:901px){.charpin{position:absolute;margin:0}}
+@media (max-width:900px){.charpin{margin-left:auto}}
+/* now-playing bar: bottom of the info panel and in the party lobby */
+.np{margin-top:auto;border-top:1px solid var(--line);padding:10px 14px 0;display:flex;flex-direction:column;gap:9px;flex:none}
+.np .npi{display:flex;align-items:center;gap:10px}
+.np .npt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.np small{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.np small b{font-weight:400;margin-left:8px;opacity:.75}
+.np strong{font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1}
+.np .iconbtn.sm{margin-left:0}
+.np .iconbtn:disabled{opacity:.35;cursor:default}
+.np .npbar{height:2px;background:var(--line);margin:0 -14px}
+.np .npbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s linear}
+.npeq{display:flex;align-items:flex-end;gap:2px;height:14px;width:14px;flex:none}
+.npeq i{flex:1;background:var(--accent);height:30%}
+.np.on .npeq i{animation:npeq .9s ease-in-out infinite}
+.np.on .npeq i:nth-child(2){animation-delay:-.3s}.np.on .npeq i:nth-child(3){animation-delay:-.6s}
+@keyframes npeq{0%,100%{height:25%}50%{height:100%}}
+.dlg.lobby .np{margin:16px 0 4px;padding:10px 0 0}
+.dlg.lobby .np .npbar{margin:0}
 .info-col{min-width:0;background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column;max-height:calc(100vh - 80px);min-height:420px;align-self:start}
-.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;flex:none}
 .tabs button{background:none;border:0;padding:14px 16px 12px;font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
 .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
 .tabpanel{padding:18px 20px 22px;overflow:auto;font-size:14px;line-height:1.55;color:#cfd3ea}
@@ -293,6 +315,9 @@ body.touchmode #loadout{bottom:calc(var(--s)*272px + env(safe-area-inset-bottom,
 body.touchmode #carrying{bottom:auto;top:30%}
 #rotate{position:fixed;inset:0;z-index:45;background:rgba(var(--bg-rgb),.94);display:grid;place-items:center;color:#f2f2f7;text-align:center;font:600 18px var(--body)}
 #rotate p{margin:12px 0 0}
+#xboxhint{position:fixed;left:50%;bottom:28%;transform:translateX(-50%);z-index:12;background:var(--panel-solid);border:1px solid var(--accent);padding:10px 16px;font-size:15px;max-width:min(560px,90vw);text-align:center}
+.xboxnote{border-left:3px solid var(--accent);background:var(--panel);padding:8px 12px;font-size:14px;color:var(--ink);max-width:62ch;margin:10px 0 0}
+#gfxlost{z-index:60}
 #lockhint{position:fixed;left:50%;bottom:28%;transform:translateX(-50%);z-index:11;background:var(--panel-solid);padding:8px 14px;font-size:13px;display:none}
 #loading{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);z-index:30;background:var(--panel-solid);border:1px solid var(--line);padding:8px 16px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
 
@@ -342,6 +367,8 @@ body.touchmode #carrying{bottom:auto;top:30%}
   </div>
 </div>
 <div id="rotate" hidden><div><svg viewBox="0 0 48 48" width="64" height="64" aria-hidden="true"><rect x="14" y="6" width="20" height="36" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M40 28a14 14 0 0 1-14 14" fill="none" stroke="#ff6a2b" stroke-width="2.5"/><path d="M26 38l0 4 4 0" fill="none" stroke="#ff6a2b" stroke-width="2.5"/></svg><p>Turn your device sideways to play</p></div></div>
+<div id="xboxhint" hidden>Your controller is moving the browser cursor. Press and hold the <kbd>☰</kbd> Menu button to switch to game controls.</div>
+<div id="gfxlost" class="screen center" hidden><div class="dlg"><h2>Graphics crashed</h2><p>Your browser ran out of graphics memory and stopped drawing the game. OVERWRITE has switched to Low graphics.</p><p class="note" id="gfxlostNote"></p><div class="row" style="justify-content:center"><button class="play" id="gfxReload">Reload</button></div></div></div>
 <div id="lockhint">Click the arena to capture the mouse. <kbd>Esc</kbd> pauses.</div>
 <div id="loading">Building arena…</div>
 <pre id="dbg" hidden style="position:fixed;left:8px;bottom:8px;z-index:40;max-width:60vw;max-height:40vh;overflow:auto;background:rgba(0,0,0,.8);color:#9f9;font:11px/1.35 ui-monospace,Consolas,monospace;padding:8px;margin:0;white-space:pre-wrap"></pre>
@@ -352,12 +379,13 @@ body.touchmode #carrying{bottom:auto;top:30%}
       <div class="eyebrow"><span class="live-dot"></span>Live from the Meridian · Season One</div>
       <h1 class="brand">OVERWRITE</h1>
       <p class="lede">Three teams. One data core. Every wall in these arenas is just data, and every contestant carries the tools to delete it.</p>
+      <p class="xboxnote" id="xboxNote" hidden><b>Playing on Xbox?</b> Press and hold the <kbd>☰</kbd> Menu button on your controller to switch between the browser cursor and game controls. Use the cursor for menus, and game controls to play.</p>
       <h2 class="sec">Choose your arena</h2>
       <div class="mapcar"><button class="marrow" id="mapPrev" aria-label="Previous arenas">&#8249;</button><div id="maps" class="maps"></div><button class="marrow" id="mapNext" aria-label="More arenas">&#8250;</button></div>
       <div class="mapdots" id="mapDots" aria-hidden="true"></div>
       <h2 class="sec">Choose your build</h2>
       <div id="classes" class="classes"></div>
-      <div class="row"><button id="play" class="play">Enter arena</button><span class="hintline"><span class="hint" id="kbhint">Build v1.4 · Oct 24, 2026 · mouse and keyboard or controller.</span><button class="iconbtn" id="charBtn" title="Customize your character" aria-label="Customize your character"></button></span></div>
+      <div class="row"><button id="play" class="play">Enter arena</button><span class="hintline"><span class="hint" id="kbhint">Build v1.6 · Oct 26, 2026 · mouse and keyboard or controller.</span></span></div>
       <h2 class="sec" style="margin-top:26px">Play with friends</h2>
       <div class="party">
         <label class="pfield"><span>Your name</span><input id="pname" type="text" maxlength="16" placeholder="Contestant" autocomplete="nickname" spellcheck="false"></label>
@@ -365,6 +393,7 @@ body.touchmode #carrying{bottom:auto;top:30%}
         <span class="or">or</span>
         <label class="pfield"><span>Party code</span><input id="joinCode" type="text" maxlength="5" placeholder="ABCDE" autocomplete="off" spellcheck="false"></label>
         <button class="ghost" id="joinBtn">Join</button>
+        <button class="iconbtn charpin" id="charBtn" title="Customize your character" aria-label="Customize your character"></button>
       </div>
       <p class="note" id="partyMsg" aria-live="polite"></p>
     </section>
@@ -378,7 +407,7 @@ body.touchmode #carrying{bottom:auto;top:30%}
       <div class="tabpanel" id="tab-briefing">
         <h4>The show</h4>
         <p>In 2071 most of the planet spends its waking hours inside the Meridian, a simulated world big enough to hold every city ever built. Its most-watched broadcast is OVERWRITE: contestants are dropped into rebuildable arenas, crack open a Cache, steal the Data Core inside, and upload it before anyone else can take it from them.</p>
-        <p>Arenas are made of editable matter. Glass, signs and sheet metal give way to gunfire. Concrete needs explosives. Steel frames hold structures up, and if you cut them, everything above comes down.</p>
+        <p>Arenas are made of editable matter. Glass, signs, and sheet metal give way to gunfire. Concrete needs explosives. Steel frames hold structures up, and if you cut them, everything above comes down.</p>
         <h4>How a round works</h4>
         <ol>
           <li>A Cache spawns somewhere in the arena. Hold <kbd>E</kbd> beside it to crack it and grab the Data Core.</li>
@@ -388,13 +417,13 @@ body.touchmode #carrying{bottom:auto;top:30%}
           <li>Each finished upload pays $10,000. Most cash after 8 minutes wins, or first team to $30,000.</li>
         </ol>
         <h4>The arenas</h4>
-        <p class="note"><b>Meridian Downtown</b> at dusk: office towers with stairs to every floor. <b>The Stackyard</b> at night: trailer homes stacked on steel scaffolds. Climb the ladders, or cut the four corner columns to drop a whole stack. <b>Harbor Nine</b> by day: a warehouse with a glass roof, container rows and a gantry crane you can bring down. <b>Glitch Galleria</b> at night: a two-storey mall under a glass roof, with escalators, shopfronts that shatter and a hologram tower that drops if you cut its legs. <b>Loop Line</b> in the morning: a street market under two elevated train lines. Every span sits on a single pier, so one breach charge brings a span down, train and all. <b>Test Site Seven</b> at noon: a 1950s desert town built for a weapons test, with a diner, motel and gas station on main street, test houses out in the flats, an observation bunker, a water tower and a steel shot tower you can climb or topple.</p>
+        <p class="note"><b>Meridian Downtown</b> at dusk: office towers with stairs to every floor. <b>The Stackyard</b> at night: trailer homes stacked on steel scaffolds. Climb the ladders, or cut the four corner columns to drop a whole stack. <b>Harbor Nine</b> by day: a warehouse with a glass roof, container rows, and a gantry crane you can bring down. <b>Glitch Galleria</b> at night: a two-storey mall under a glass roof, with escalators, shopfronts that shatter, and a hologram tower that drops if you cut its legs. <b>Loop Line</b> in the morning: a street market under two elevated train lines. Every span sits on a single pier, so one breach charge brings a span down, train and all. <b>Test Site Seven</b> at noon: a 1950s desert town built for a weapons test, with a diner, motel, and gas station on main street, test houses out in the flats, an observation bunker, a water tower, and a steel shot tower you can climb or topple.</p>
         <h4>Material guide</h4>
-        <p class="note">Glass and neon: 1 hit. Wall panels, crates, sheet metal and ladders: a few rounds, and bullets penetrate at 60% damage. Concrete, floor slabs and grating: explosives or the sledge. Steel frames: breach charges.</p>
+        <p class="note">Glass and neon: 1 hit. Wall panels, crates, sheet metal, and ladders: a few rounds, and bullets penetrate at 60% damage. Concrete, floor slabs, and grating: explosives or the sledge. Steel frames: breach charges.</p>
       </div>
       <div class="tabpanel" id="tab-balance" hidden></div>
       <div class="tabpanel" id="tab-controls" hidden>
-        <p class="note">Click a slot, then press the key, mouse button or controller button you want for it. <b>Esc</b> cancels, <b>Delete</b> clears a slot. If a key is already in use, it moves to the new action. Saved in this browser.</p>
+        <p class="note">Click a slot, then press the key, mouse button, or controller button you want for it. <b>Esc</b> cancels, <b>Delete</b> clears a slot. If a key is already in use, it moves to the new action. Saved in this browser.</p>
         <div class="tbl-wrap"><table class="binds" id="bindTable"></table></div>
         <div class="row"><button class="ghost sm" id="bindResetKb">Reset keyboard</button><button class="ghost sm" id="bindResetPad">Reset controller</button></div>
         <p class="note" id="bindMsg" aria-live="polite"></p>
@@ -408,7 +437,7 @@ body.touchmode #carrying{bottom:auto;top:30%}
           <kbd>D-pad</kbd><span>In menus: move · <b>A</b> select · <b>B</b> back · <b>LB/RB</b> switch tabs · left/right changes a setting</span>
           <kbd>F9</kbd><span>Debug overlay (F8 test smoke, F7 viewpoints)</span>
         </div>
-        <p class="note" style="margin-top:12px"><b>Touch screens:</b> drag on the left side to move (push all the way forward to sprint), drag anywhere on the right to look. The fire button also aims while you drag it. AIM toggles aiming down sights, USE is hold-to-interact. Turn your phone sideways; the top-left buttons pause, show the scoreboard and go fullscreen. Touch look speed is in Settings.</p>
+        <p class="note" style="margin-top:12px"><b>Touch screens:</b> drag on the left side to move (push all the way forward to sprint), drag anywhere on the right to look. The fire button also aims while you drag it. AIM toggles aiming down sights, USE is hold-to-interact. Turn your phone sideways; the top-left buttons pause, show the scoreboard, and go fullscreen. Touch look speed is in Settings.</p>
         <p class="note" style="margin-top:12px">Tips: on a ladder, forward climbs and back descends; look straight ahead to step off, look up to keep climbing. Crouch while sprinting to slide. Sprint on a controller toggles. If Reload and Interact share a controller button, tap reloads and hold interacts. Button names are Xbox; PlayStation is A=✕, B=○, X=□, Y=△, LB/RB=L1/R1, LT/RT=L2/R2.</p>
       </div>
       <div class="tabpanel" id="tab-settings" hidden>
@@ -429,6 +458,7 @@ body.touchmode #carrying{bottom:auto;top:30%}
         <div class="set"><label for="sBots">Opponents</label><select id="sBots"><option value="on">Bots: two rival teams</option><option value="off">Sandbox: no bots</option></select><span></span></div>
         <p class="note">Settings are saved in this browser.</p>
       </div>
+      <div class="np" data-np><div class="npi"><span class="npeq" aria-hidden="true"><i></i><i></i><i></i></span><div class="npt"><small><span class="npst">Now playing</span><b class="npn"></b></small><strong class="npname"></strong></div><button class="iconbtn sm" id="mNpPrev" data-np-act="prev" title="Previous song" aria-label="Previous song"></button><button class="iconbtn sm" id="mNpPause" data-np-act="pause" title="Pause music" aria-label="Pause music"></button><button class="iconbtn sm" id="mNpNext" data-np-act="next" title="Next song" aria-label="Next song"></button></div><div class="npbar"><i></i></div></div>
     </section>
   </div>
 </div>
@@ -457,6 +487,7 @@ body.touchmode #carrying{bottom:auto;top:30%}
       <div class="set"><label for="lWpn">Weapon</label><select id="lWpn"></select><span></span></div>
     </div>
   </div>
+  <div class="np" data-np><div class="npi"><span class="npeq" aria-hidden="true"><i></i><i></i><i></i></span><div class="npt"><small><span class="npst">Now playing</span><b class="npn"></b></small><strong class="npname"></strong></div><button class="iconbtn sm" id="lNpPrev" data-np-act="prev" title="Previous song" aria-label="Previous song"></button><button class="iconbtn sm" id="lNpPause" data-np-act="pause" title="Pause music" aria-label="Pause music"></button><button class="iconbtn sm" id="lNpNext" data-np-act="next" title="Next song" aria-label="Next song"></button></div><div class="npbar"><i></i></div></div>
   <div class="row"><button class="play" id="lStart">Start match</button><span class="hint" id="lWait">Waiting for the host to start the match.</span><button class="ghost" id="lLeave">Leave party</button></div>
 </div></div>
 
@@ -474,7 +505,7 @@ body.touchmode #carrying{bottom:auto;top:30%}
 <script>
 (function(){
 'use strict';
-const VERSION='1.4';
+const VERSION='1.6';
 let DEBUG=location.hash==='#debug';
 const dbgLog=[];
 addEventListener('hashchange',()=>{ if(location.hash==='#debug') DEBUG=true; });
@@ -483,7 +514,7 @@ addEventListener('hashchange',()=>{ if(location.hash==='#debug') DEBUG=true; });
   addEventListener('error',e=>push('uncaught',[e.message+' @'+e.lineno])); }
 const HEADLESS=!!window.__OVERWRITE_HEADLESS;
 if(!HEADLESS){ let ok=false; try{ const c=document.createElement('canvas'); ok=!!(window.WebGLRenderingContext&&(c.getContext('webgl2')||c.getContext('webgl'))); }catch(e){}
-  if(!ok||typeof THREE==='undefined'){ document.body.innerHTML='<div style="position:fixed;inset:0;display:grid;place-items:center;background:#0b0d1a;color:#f2f2f7;font:16px/1.5 system-ui,sans-serif;padding:24px;text-align:center"><div><h1 style="font-size:28px;margin:0 0 8px">OVERWRITE couldn\'t start</h1><p style="margin:0;color:#a7abc4">'+(typeof THREE==='undefined'?'The 3D library didn\'t load. Check your internet connection and refresh.':'This browser or device has 3D graphics (WebGL) turned off. Try an up-to-date Chrome, Edge, Firefox or Safari, and turn on hardware acceleration.')+'</p></div></div>'; throw new Error('OVERWRITE: no WebGL'); } }
+  if(!ok||typeof THREE==='undefined'){ document.body.innerHTML='<div style="position:fixed;inset:0;display:grid;place-items:center;background:#0b0d1a;color:#f2f2f7;font:16px/1.5 system-ui,sans-serif;padding:24px;text-align:center"><div><h1 style="font-size:28px;margin:0 0 8px">OVERWRITE couldn\'t start</h1><p style="margin:0;color:#a7abc4">'+(typeof THREE==='undefined'?'The 3D library didn\'t load. Check your internet connection and refresh.':'This browser or device has 3D graphics (WebGL) turned off. Try an up-to-date Chrome, Edge, Firefox, or Safari, and turn on hardware acceleration.')+'</p></div></div>'; throw new Error('OVERWRITE: no WebGL'); } }
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>v<a?a:v>b?b:v, lerp=(a,b,t)=>a+(b-a)*t, rand=(a,b)=>a+Math.random()*(b-a), DEG=Math.PI/180;
 const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
@@ -494,7 +525,7 @@ const hash3=(x,y,z)=>((x*73856093)^(y*19349663)^(z*83492791))>>>0;
    BALANCE DATA — every number that matters lives here.
    (1) all automatic primaries share one ~230 DPS body budget at their optimal
    range, so body-shot TTK depends on the TARGET, not the gun.
-   (2) Guns differ in range profile, handling and crit reward, not raw power.
+   (2) Guns differ in range profile, handling, and crit reward, not raw power.
    (3) Class HP is scaled to hitbox area: HP / (width x height) ~= 192.
    ===================================================================== */
 const VS=0.5, GX=128, GY=40, GZ=128, G=22, TICK=1/120;
@@ -555,8 +586,12 @@ SET.touchSens=1;
   if(saved) Object.assign(SET,saved);
   else { try{ if(matchMedia('(pointer:coarse)').matches){ SET.gfx=Math.min(screen.width,screen.height)>=700?'medium':'low'; } }catch(e){} } }
 function saveSet(){try{localStorage.setItem('overwrite-settings',JSON.stringify(SET));}catch(e){}}
+// Edge on Xbox: the controller drives a browser cursor until you press and hold the Menu button, the cursor's
+// clicks arrive as touches, and the console has little graphics memory. Start Xbox players on Low graphics, once.
+const IS_XBOX=/xbox/i.test(navigator.userAgent||'');
+if(IS_XBOX&&!SET.xboxTuned){ SET.gfx='low'; SET.xboxTuned=true; saveSet(); }
 /* ---------- remappable controls ----------
-   Each action has a canonical code (its original default key). Physical keys, mouse buttons
+   Each action has a canonical code (its original default key). Physical keys, mouse buttons,
    and controller buttons are translated to canonical codes on input, so the game logic never
    needs to know what the player bound. */
 const ACTIONS=[
@@ -637,7 +672,7 @@ const OPTICS={
   reddot:{name:'Red Dot',fov:60,ads:.16,spread:.38,move:.72,desc:'Small red dot on a clear lens. Quick, light magnification for close and mid range.'},
   holo:{name:'Holo Sight',fov:55,ads:.18,spread:.36,move:.7,desc:'Ring-and-dot reticle in an open window. Easy to track moving targets.'},
   prism:{name:'2x Prism',fov:40,ads:.23,spread:.32,move:.66,desc:'Etched chevron at 2x. Better for long streets and rooftop fights, slower to raise.'},
-  scope:{name:'4x Scope',fov:22,ads:.3,spread:.24,move:.55,desc:'Full scope picture at 4x. Precise at range, slow to aim and blind to your flanks.'}};
+  scope:{name:'4x Scope',fov:22,ads:.3,spread:.24,move:.55,desc:'Full scope picture at 4x. Precise at range, slow to aim, and blind to your flanks.'}};
 const opticMag=o=>Math.tan(OC_BASE_FOV*Math.PI/360)/Math.tan(OPTICS[o].fov*Math.PI/360);
 const ALL_OPTICS=Object.keys(OPTICS);
 const WPN_OPTICS={wasp:ALL_OPTICS,needle:ALL_OPTICS,arbiter:ALL_OPTICS,breaker:ALL_OPTICS,bulwark:ALL_OPTICS,sledge:[]};
@@ -827,7 +862,7 @@ function applyTheme(id){
 }
 if(!THEMES[SET.theme]) SET.theme='broadcast';
 applyTheme(SET.theme);
-// party-multiplayer state; role is 'solo', 'host' or 'client'
+// party-multiplayer state; role is 'solo', 'host', or 'client'
 const NET={role:'solo',peer:null,code:'',mid:'host',clients:new Map(),byId:new Map(),host:null,lobby:null,tick:0,phase:0,ops:[],shots:[],evq:[],hist:[],rosterDirty:false,
   wTick:0,upto:-1,wQueue:[],wqi:0,snaps:[],seq:0,ackSeq:0,outFrames:[],lastSnapT:-1,renderTick:0,menuOpen:false,awaitingWorld:false,projMeshes:[],projSnap:[],shotQ:[],waitReady:null,hostReady:false,lastHeard:0};
 function AUTH(){ return NET.role!=='client'; }
@@ -996,7 +1031,7 @@ const MAPS={
     },
   },
   harbor:{
-    id:'harbor', name:'Harbor Nine', meta:'Day · freight yard', tag:'A glass-roofed warehouse, container rows and a gantry crane you can bring down.',
+    id:'harbor', name:'Harbor Nine', meta:'Day · freight yard', tag:'A glass-roofed warehouse, container rows, and a gantry crane you can bring down.',
     swatch:'linear-gradient(180deg,#3c78d8,#c9dcef 60%,#d8a32a)',
     spawns:[{x:32,z:3.5},{x:3.5,z:50},{x:60.5,z:50}],
     uplinks:[{x:19.25,z:29.25,name:'A'},{x:46.25,z:33.25,name:'B'}],
@@ -1191,7 +1226,7 @@ const MAPS={
       const trainEW=[1,2], trainNS=[0,1];
       for(const k of trainEW){ const s=this.ewSpans.find(s=>s.x0===16*k); car(s.x0+1,s.x1-1,'x'); }
       for(const j of trainNS){ const s=this.nsSpans[j]; car(s.z0+1,s.z1-1,'z'); }
-      // low parapets on the open spans, ladders up two piers and the north terminus
+      // low parapets on the open spans, ladders up two piers, and the north terminus
       for(const s of this.ewSpans) if(!trainEW.includes(s.x0/16)) for(let x=s.x0;x<=s.x1;x++){ setV(x,13,86,MAT.METAL,TEAL); setV(x,13,91,MAT.METAL,TEAL); }
       this.nsSpans.forEach((s,j)=>{ if(trainNS.includes(j)) return; for(let z=s.z0;z<=s.z1;z++){ setV(61,13,z,MAT.METAL,TEAL); setV(66,13,z,MAT.METAL,TEAL); } });
       for(const x of [7,103]){ for(let y=0;y<=13;y++) setV(x,y,84,MAT.LADDER); fill(x-2,13,86,x+2,13,86,0); }
@@ -1388,7 +1423,7 @@ function genRings(){
 /* =====================================================================
    RENDERER, POST-PROCESSING
    ===================================================================== */
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+const renderer=new THREE.WebGLRenderer({antialias:!IS_XBOX,powerPreference:'high-performance'});
 renderer.autoClear=false; renderer.setClearColor(0x000000,1);
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 $('stage').appendChild(renderer.domElement);
@@ -1839,32 +1874,43 @@ function audioInit(){
   }catch(e){ AU.ctx=null; }
 }
 /* =====================================================================
-   MENU MUSIC: three original synth tracks played live by the Web Audio API.
+   MENU MUSIC: five original synth tracks played live by the Web Audio API.
    They rotate on the home screen and in party lobbies, and fade out when a
-   match starts. Each track is 32 bars that build in four 8-bar sections.
+   match starts. The now-playing bar shows the song and has back, pause, and skip.
      1. Signal Lost: moody synthwave in A minor, 98 BPM
-     2. Overclock: driving darksynth in D minor, 124 BPM
+     2. Overclock (Extended): driving darksynth in D minor, 124 BPM
      3. Afterhours: slow late-night lo-fi in E minor, 84 BPM
+     4. Neon Run: bright outrun synth-pop in F major, 112 BPM
+     5. Glasswire: liquid drum and bass in F minor, 172 BPM
    ===================================================================== */
-const MUS={gain:null,delay:null,fb:null,padF:null,playing:false,next:0,step:0,trk:0,played:0,timer:0};
+const MUS={gain:null,delay:null,fb:null,send:null,padF:null,playing:false,paused:false,advance:false,next:0,step:0,trk:0,timer:0,ui:''};
 const mtof=m=>440*Math.pow(2,(m-69)/12);
 function musicSetup(){ const c=AU.ctx; if(!c||MUS.gain) return;
   MUS.gain=c.createGain(); MUS.gain.gain.value=0; MUS.gain.connect(AU.master);
   MUS.delay=c.createDelay(1.5); MUS.fb=c.createGain(); const dl=c.createBiquadFilter(); dl.type='lowpass'; dl.frequency.value=2400;
   MUS.delay.connect(dl); dl.connect(MUS.fb); MUS.fb.connect(MUS.delay); dl.connect(MUS.gain);
+  MUS.send=c.createGain(); MUS.send.gain.value=.45; MUS.send.connect(MUS.delay);
   MUS.padF=c.createBiquadFilter(); MUS.padF.type='lowpass'; MUS.padF.frequency.value=1100; MUS.padF.Q.value=1.5; MUS.padF.connect(MUS.gain);
   const lfo=c.createOscillator(), lg=c.createGain(); lfo.frequency.value=.06; lg.gain.value=600; lfo.connect(lg); lg.connect(MUS.padF.frequency); lfo.start();
-  musicUseTrack(0,0); MUS.timer=setInterval(musicSched,40); }
+  musicUseTrack(MUS.trk,0); MUS.timer=setInterval(musicSched,40); }
 // echo settings change with the song
-function musicUseTrack(n,t){ MUS.trk=n; const T=TRACKS[n]; MUS.delay.delayTime.setValueAtTime(60/T.bpm*T.echo,t); MUS.fb.gain.setValueAtTime(T.fb,t); }
+function musicUseTrack(n,t){ MUS.trk=n; if(!MUS.delay) return; const T=TRACKS[n]; MUS.delay.delayTime.setValueAtTime(60/T.bpm*T.echo,t); MUS.fb.gain.setValueAtTime(T.fb,t); }
 function mTone(t,f,dur,vol,type,cut,dest){ const c=AU.ctx,o=c.createOscillator(),g=c.createGain(); o.type=type; o.frequency.value=f; let n=o;
   if(cut){ const fl=c.createBiquadFilter(); fl.type='lowpass'; fl.Q.value=4; fl.frequency.setValueAtTime(cut,t); fl.frequency.exponentialRampToValueAtTime(Math.max(150,cut*.2),t+dur); o.connect(fl); n=fl; }
   n.connect(g); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.006); g.gain.exponentialRampToValueAtTime(.0008,t+dur); g.connect(dest||MUS.gain); o.start(t); o.stop(t+dur+.05); return g; }
+// sustained note: attack, hold, release (for bass, leads, and keys that need to ring)
+function mHold(t,f,dur,vol,type,cut,det,att){ const c=AU.ctx,o=c.createOscillator(),g=c.createGain(); o.type=type; o.frequency.value=f; if(det) o.detune.value=det; let n=o;
+  if(cut){ const fl=c.createBiquadFilter(); fl.type='lowpass'; fl.Q.value=1; fl.frequency.value=cut; o.connect(fl); n=fl; }
+  const a=att||.01; n.connect(g); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+a); g.gain.setValueAtTime(vol,t+Math.max(a,dur-.07)); g.gain.linearRampToValueAtTime(0,t+dur);
+  g.connect(MUS.gain); o.start(t); o.stop(t+dur+.03); return {o,g}; }
 function mNoise(t,type,freq,q,dur,vol){ const c=AU.ctx,g=c.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0008,t+dur); g.connect(MUS.gain); noiseBurst(g,type,freq,q,t,dur); }
 function mKick(t,vol,f0,dec){ const c=AU.ctx,o=c.createOscillator(),g=c.createGain(); o.frequency.setValueAtTime(f0||140,t); o.frequency.exponentialRampToValueAtTime(42,t+.13);
   g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+(dec||.32)); o.connect(g); g.connect(MUS.gain); o.start(t); o.stop(t+(dec||.32)+.03); }
 function mPad(t,chord,L,vol){ const c=AU.ctx; for(const m of chord) for(const d of [-7,7]){ const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth'; o.frequency.value=mtof(m); o.detune.value=d;
   g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.5); g.gain.setValueAtTime(vol,t+L-.6); g.gain.linearRampToValueAtTime(0,t+L); o.connect(g); g.connect(MUS.padF); o.start(t); o.stop(t+L+.05); } }
+function mRiser(t,len,vol){ const c=AU.ctx,g=c.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+len*.94); g.gain.linearRampToValueAtTime(0,t+len); g.connect(MUS.gain);
+  const f=noiseBurst(g,'bandpass',400,2,t,len); f.frequency.setValueAtTime(400,t); f.frequency.exponentialRampToValueAtTime(7000,t+len); }
+function mCrash(t,vol){ mNoise(t,'highpass',5000,.4,1.4,vol); mNoise(t,'bandpass',8000,.6,.6,vol*.6); }
 
 // ---- 1. Signal Lost (A minor: Am, F, C, G) ----
 const SL_CH=[[57,60,64],[57,60,65],[55,60,64],[55,59,62]], SL_BASS=[45,41,48,43];
@@ -1883,25 +1929,35 @@ function stepSignalLost(s,t,sp){ const i=s%16, bar=Math.floor(s/16)%32, sec=bar>
   if(sec===3) for(const [st,m,len] of SL_LEAD[ch]) if(st===i){ const g=mTone(t,mtof(m),sp*len,.05,'triangle',0); g.connect(MUS.delay); mTone(t,mtof(m)*1.003,sp*len,.025,'sawtooth',3000); }
 }
 
-// ---- 2. Overclock (D minor: Dm, Bb, Gm, A) ----
-const OC_CH=[[62,65,69],[62,65,70],[62,67,70],[61,64,69]], OC_BASS=[38,34,43,45];
-// riff: semitones above the bass root (null = rest); T marks the chord's third
-const OC_RIFF=[0,null,7,null,12,null,7,'T', 0,null,7,null,12,'T2',12,7];
-function stepOverclock(s,t,sp){ const c=AU.ctx, i=s%16, bar=Math.floor(s/16)%32, sec=bar>>3, ch=bar%4, chord=OC_CH[ch], root=OC_BASS[ch], third=ch===3?4:3;
-  // pulsing 16th bass that opens up through the intro, and drops out under each kick
-  if(!(sec>=1&&i%4===0)) mTone(t,mtof(root),sp*.85,i%4===2?.1:.075,'sawtooth',sec===0?260+bar*120:1250);
-  if(sec>=1&&i%4===0){ mKick(t,.6,165,.26); mTone(t,mtof(root),sp*.6,.05,'sawtooth',700); }
-  mNoise(t,'highpass',9000,.7,.03,sec===0?.025:(i%2?.03:.045));
-  if(sec>=2&&i%4===2) mNoise(t,'highpass',6000,.6,.14,.05);
-  if(sec>=2&&(i===4||i===12)){ mNoise(t,'bandpass',1500,.8,.18,.17); mNoise(t,'highpass',3000,.5,.05,.06); }
-  // offbeat chord stabs through the echo
-  if(sec>=1&&i%4===2) for(const m of chord){ const g=mTone(t,mtof(m+12),sp*.9,.026,'square',2600); g.connect(MUS.delay); }
-  if(sec>=2){ const r=OC_RIFF[i]; if(r!==null){ const off=r==='T'?12+third:r==='T2'?24+third:r; mTone(t,mtof(root+24+off),sp*.9,sec===3?.05:.038,'sawtooth',sec===3?4200:3000);
-    if(sec===3) mTone(t,mtof(root+36+off),sp*.7,.018,'square',3000); } }
-  if(sec===3&&i===0) mPad(t,chord.map(m=>m-12),sp*16+.4,.02);
-  // riser into the loop point
-  if(bar===31&&i===0){ const g=c.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.09,t+sp*15); g.gain.linearRampToValueAtTime(0,t+sp*16); g.connect(MUS.gain);
-    const f=noiseBurst(g,'bandpass',400,2,t,sp*16); f.frequency.setValueAtTime(400,t); f.frequency.exponentialRampToValueAtTime(7000,t+sp*16); }
+// ---- 2. Neon Run (F major: F, C, Dm, Bb) ----
+// intro, verse, chorus, bridge, final chorus (8 bars each)
+const NR_CH=[[65,69,72],[64,67,72],[65,69,74],[65,70,74]], NR_BASS=[41,36,38,34];
+const NR_LEAD=[[[0,72,3],[3,74,3],[6,77,6],[12,76,4]],[[0,76,3],[3,74,3],[6,72,6],[12,67,4]],[[0,69,3],[3,72,3],[6,74,6],[12,77,4]],[[0,77,6],[6,76,2],[8,74,4],[12,72,4]]];
+function mLead(t,m,dur,vol){ const c=AU.ctx; for(const [type,v,det] of [['sawtooth',vol,-6],['square',vol*.5,6]]){ const n=mHold(t,mtof(m),dur,v,type,3400,det,.012);
+    const l=c.createOscillator(), lg=c.createGain(); l.frequency.value=5.5; lg.gain.setValueAtTime(0,t); lg.gain.linearRampToValueAtTime(14,t+Math.min(.3,dur)); l.connect(lg); lg.connect(n.o.detune); l.start(t); l.stop(t+dur+.03);
+    n.g.connect(MUS.send); } }
+function mGatedSnare(t,vol){ const c=AU.ctx,g=c.createGain(); g.gain.setValueAtTime(vol,t); g.gain.setValueAtTime(vol*.7,t+.17); g.gain.linearRampToValueAtTime(0,t+.21); g.connect(MUS.gain);
+  noiseBurst(g,'bandpass',1100,.6,t,.22); mNoise(t,'highpass',5000,.5,.12,vol*.45); mTone(t,200,.07,vol*.4,'triangle',0); }
+function stepNeonRun(s,t,sp){ const i=s%16, bar=Math.floor(s/16)%40, sec=bar>>3, ch=bar%4, chord=NR_CH[ch], root=NR_BASS[ch];
+  const chorus=sec===2||sec===4, beat=sec===1||chorus;
+  if(i===0) mPad(t,chord,sp*16+.6,sec===3?.034:.026);
+  // bright plucked arpeggio on the eighths, through the echo
+  if(i%2===0){ const m=[chord[0],chord[1],chord[2],chord[1]][(i/2)%4]+12; const g=mTone(t,mtof(m),sp*1.5,sec===0?.046:.038,'sawtooth',sec===0?1500+bar*220:3200); g.connect(MUS.send); }
+  if(beat){
+    if(i===0||i===8) mKick(t,.5,150,.3); if(chorus&&i===10) mKick(t,.32,150,.25);
+    if(i===4||i===12) mGatedSnare(t,.15);
+    if(i%2===0) mNoise(t,'highpass',8500,.7,.04,i%4===0?.05:.032);
+    // galloping bass: three notes on every beat
+    if(i%4!==1) mTone(t,mtof(root+(i%4===0?0:12)),sp*.95,i%4===0?.12:.08,'sawtooth',1300);
+  }
+  if(sec===3){ if(i===0) mHold(t,mtof(root),sp*15,.09,'sawtooth',500); if(i===0&&bar>=28) mKick(t,.4,150,.3); if(bar>=30&&i%2===0) mNoise(t,'highpass',8500,.7,.04,.03); }
+  // tom fill into the next section
+  if((bar===15||bar===23||bar===31)&&i>=12) mTone(t,[220,185,155,130][i-12],sp*1.6,.2,'sine',0);
+  if(bar===31&&i===0) mRiser(t,sp*16,.07);
+  if(chorus||(sec===3&&bar%2===1)) for(const [st,m,len] of NR_LEAD[ch]) if(st===i){
+    if(sec===3) { mBell(t,m+12,sp*len+.3,.04); continue; }
+    mLead(t,m+(sec===4?12:0),sp*len*.95,sec===4?.038:.046); if(sec===4) mLead(t,m,sp*len*.95,.026); }
+  if(chorus&&bar%8===0&&i===0) mCrash(t,.07);
 }
 
 // ---- 3. Afterhours (E minor: Em9, Cmaj7, Am7, Bsus) ----
@@ -1910,9 +1966,7 @@ const AH_MEL=[[[0,71,6],[6,74,2],[8,76,8]],[[2,79,4],[8,76,4],[12,74,4]],[[0,72,
 function mKeys(t,m,dur,vol){ mTone(t,mtof(m),dur,vol,'sine',0); mTone(t,mtof(m)*2.002,dur*.5,vol*.25,'triangle',0); }
 function mBell(t,m,dur,vol){ const a=mTone(t,mtof(m),dur,vol,'sine',0), b=mTone(t,mtof(m)*3.01,dur*.35,vol*.35,'sine',0); a.connect(MUS.delay); b.connect(MUS.delay); }
 function stepAfterhours(s,t,sp){ const i=s%16, bar=Math.floor(s/16)%32, sec=bar>>3, ch=bar%4, chord=AH_CH[ch], sw=i%4===2?sp*.28:0;
-  // tape crackle
   if(Math.random()<.35) mNoise(t+Math.random()*sp,'highpass',3500,.5,.006,.02+Math.random()*.03);
-  // electric piano comping
   if(i===0) for(const m of chord) mKeys(t,m,sp*7,.042);
   if(i===6) for(const m of chord.slice(-3)) mKeys(t+sw,m,sp*4,.034);
   if(sec>=1&&i===11) for(const m of chord.slice(-3)) mKeys(t,m,sp*3,.02);
@@ -1926,23 +1980,130 @@ function stepAfterhours(s,t,sp){ const i=s%16, bar=Math.floor(s/16)%32, sec=bar>
   if(sec===3&&i===0) mPad(t,chord.slice(0,3),sp*16+.6,.014);
 }
 
-const TRACKS=[{name:'Signal Lost',bpm:98,echo:.75,fb:.38,step:stepSignalLost},{name:'Overclock',bpm:124,echo:.5,fb:.3,step:stepOverclock},{name:'Afterhours',bpm:84,echo:.75,fb:.35,step:stepAfterhours}];
-const TRACK_BARS=32;
+// ---- 4. Overclock, extended mix (D minor: Dm, Bb, Gm, A) ----
+// intro, build, drop, breakdown, second drop, outro (8 bars each)
+const OC_CH=[[62,65,69],[62,65,70],[62,67,70],[61,64,69]], OC_BASS=[38,34,43,45];
+const OC_RIFF=[0,null,7,null,12,null,7,'T', 0,null,7,null,12,'T2',12,7];
+function stepOverclock(s,t,sp){ const i=s%16, bar=Math.floor(s/16)%48, sec=bar>>3, ch=bar%4, chord=OC_CH[ch], root=OC_BASS[ch], third=ch===3?4:3;
+  if(bar===47){ if(i===0){ mKick(t,.6,165,.4); mCrash(t,.09); mHold(t,mtof(38),sp*12,.08,'sawtooth',600); mPad(t,[50,53,57],sp*14,.024); } return; }
+  const drop=sec===2||sec===4, brk=sec===3, out=sec===5, kick=sec===1||drop||(out&&bar<46);
+  // pulsing 16th bass: opens up through the intro, closes down in the outro, drops out under each kick
+  if(brk){ if(i%4===0) mTone(t,mtof(root),sp*3.6,.07,'sawtooth',500+(bar-24)*110); }
+  else if(!(kick&&i%4===0)) mTone(t,mtof(root),sp*.85,i%4===2?.1:.075,'sawtooth',sec===0?260+bar*120:out?Math.max(320,1250-(bar-40)*140):1250);
+  if(kick&&i%4===0){ mKick(t,.6,165,.26); mTone(t,mtof(root),sp*.6,.05,'sawtooth',700); }
+  if(!brk||i%2===0) mNoise(t,'highpass',9000,.7,.03,sec===0?.025:(i%2?.03:.045));
+  if(drop&&i%4===2) mNoise(t,'highpass',6000,.6,.14,.05);
+  const clapOn=drop||(out&&bar<44);
+  if(clapOn&&(i===4||i===12)){ mNoise(t,'bandpass',1500,.8,.18,.17); mNoise(t,'highpass',3000,.5,.05,.06); }
+  if(brk&&bar===31&&(i%2===0||i>=8)) mNoise(t,'bandpass',1500,.8,.1,.04+i*.008);
+  // off-beat chord stabs through the echo
+  if((sec===1||clapOn)&&i%4===2) for(const m of chord){ const g=mTone(t,mtof(m+12),sp*.9,.026,'square',2600); g.connect(MUS.delay); }
+  if(drop||brk){ const r=OC_RIFF[i]; if(r!==null){ const off=r==='T'?12+third:r==='T2'?24+third:r;
+    if(brk) mTone(t,mtof(root+24+off),sp*.9,.03,'square',900+(bar-24)*320);
+    else { mTone(t,mtof(root+24+off),sp*.9,sec===4?.05:.038,'sawtooth',sec===4?4200:3000); if(sec===4) mTone(t,mtof(root+36+off),sp*.7,.018,'square',3000); } } }
+  if(i===0&&brk) mPad(t,chord,sp*16+.4,.026);
+  if(i===0&&sec===4) mPad(t,chord.map(m=>m-12),sp*16+.4,.02);
+  if(i===0&&(bar===16||bar===32)) mCrash(t,.08);
+  if(i===0&&(bar===15||bar===31)) mRiser(t,sp*16,bar===31?.09:.06);
+}
+
+// ---- 5. Glasswire (F minor: Fm7, Dbmaj7, Bbm7, Csus) ----
+// intro, drop, breakdown, second drop (16 bars each); chords last two bars
+const GW_CH=[[53,56,60,63],[49,53,56,60],[46,49,53,56],[48,53,55,58]], GW_BASS=[41,37,46,36];
+const GW_MEL=[[[0,72,12],[12,75,4],[16,77,16]],[[0,80,12],[12,77,4],[16,75,16]],[[0,73,12],[12,72,4],[16,70,16]],[[0,72,24],[24,70,8]]];
+const GW_HAT=[.05,.018,.032,.02, .045,.018,.03,.024, .05,.018,.032,.02, .045,.02,.04,.026];
+function stepGlasswire(s,t,sp){ const i=s%16, bar=Math.floor(s/16)%64, sec=bar>>4, ch=(bar>>1)%4, chord=GW_CH[ch], root=GW_BASS[ch], pos=(bar%2)*16+i;
+  const drums=sec===1||sec===3, last=bar===63;
+  if(pos===0) mPad(t,chord,sp*32+.6,sec===2?.03:drums?.016:.024);
+  // airy pluck on the beats, through the echo
+  if(i%4===0&&!(last&&i>=8)){ const m=[chord[0]+12,chord[2]+12,chord[1]+24,chord[3]+12][i/4]; const g=mTone(t,mtof(m),sp*3,sec===2?.03:.04,'triangle',0); g.connect(MUS.send); }
+  if(sec===2&&i%2===0) mKeys(t,chord[(i/2)%chord.length]+12,sp*3,.022);
+  if(drums&&!(last&&i>=8)){
+    if(i===0||i===10) mKick(t,.55,150,.28);
+    if(i===4||i===12){ mNoise(t,'bandpass',1900,.8,.17,.15); mTone(t,200,.06,.06,'triangle',0); mNoise(t,'highpass',4000,.5,.09,.05); }
+    if(i===7) mNoise(t,'bandpass',1900,.8,.08,.035); if(i===15&&bar%2) mNoise(t,'bandpass',1900,.8,.08,.045);
+    mNoise(t,'highpass',9000,.7,i===14?.12:.03,GW_HAT[i]);
+    // rolling bass: deep sine sub under a detuned reese
+    if(i===0||i===8||(bar%2&&i===14)){ const d=i===14?2:i===0?8:6, f=mtof(root+(i===14?7:0));
+      mHold(t,f,sp*d,.13,'sine',0); for(const det of [-11,11]) mHold(t,f*2,sp*d,.032,'sawtooth',650,det,.02); }
+  }
+  if(sec===0&&bar>=8){ mNoise(t,'highpass',9000,.7,.03,GW_HAT[i]*(bar>=12?1:.6)); if(bar>=12&&i===0) mKick(t,.45,150,.28); }
+  if(sec===3) for(const [st,m,len] of GW_MEL[ch]) if(st===pos){ const n=mHold(t,mtof(m),sp*len,.05,'triangle',0,0,.09); n.g.connect(MUS.send); mHold(t,mtof(m)*1.004,sp*len,.016,'sawtooth',1800,0,.12); }
+  if(i===0&&(bar===15||bar===47)) mRiser(t,sp*16,.08);
+  if(bar===47&&(i%2===0||i>=8)) mNoise(t,'bandpass',1900,.8,.08,.03+i*.007);
+  if(i===0&&(bar===16||bar===48)) mCrash(t,.08);
+}
+
+const TRACKS=[
+  {name:'Signal Lost',bpm:98,bars:32,echo:.75,fb:.38,step:stepSignalLost},
+  {name:'Overclock (Extended)',bpm:124,bars:48,echo:.5,fb:.3,step:stepOverclock},
+  {name:'Afterhours',bpm:84,bars:32,echo:.75,fb:.35,step:stepAfterhours},
+  {name:'Neon Run',bpm:112,bars:40,echo:.75,fb:.32,step:stepNeonRun},
+  {name:'Glasswire',bpm:172,bars:64,echo:.75,fb:.3,step:stepGlasswire}];
 function musicStep(s,t,sp){ TRACKS[MUS.trk].step(s,t,sp); }
 function musicSched(){ if(!MUS.playing||!AU.ctx||AU.ctx.state!=='running') return; const c=AU.ctx;
   if(MUS.next<c.currentTime) MUS.next=c.currentTime+.06;
   while(MUS.next<c.currentTime+.18){ let sp=60/TRACKS[MUS.trk].bpm/4;
     // song over: short gap, then the next one in the rotation
-    if(MUS.step>=TRACK_BARS*16){ MUS.next+=1.4; MUS.step=0; musicUseTrack((MUS.trk+1)%TRACKS.length,MUS.next); MUS.played++; sp=60/TRACKS[MUS.trk].bpm/4; continue; }
+    if(MUS.step>=TRACKS[MUS.trk].bars*16){ MUS.next+=1.4; MUS.step=0; musicUseTrack((MUS.trk+1)%TRACKS.length,MUS.next); continue; }
     musicStep(MUS.step,MUS.next,sp); MUS.step++; MUS.next+=sp; } }
-function musicTick(){ if(!AU.ctx||!MUS.gain) return;
-  const want=SET.music>0&&(state==='menu'||state==='lobby')&&!document.hidden, c=AU.ctx, g=MUS.gain.gain, target=SET.music;
-  // each visit to the menu starts the next song, so you don't always hear the same intro
-  if(want&&!MUS.playing){ MUS.playing=true; MUS.step=0; MUS.next=c.currentTime+.1; musicUseTrack(MUS.played%TRACKS.length,c.currentTime); MUS.played++; g.cancelScheduledValues(c.currentTime); g.setValueAtTime(g.value,c.currentTime); g.linearRampToValueAtTime(target,c.currentTime+2.5); }
-  else if(!want&&MUS.playing){ MUS.playing=false; g.cancelScheduledValues(c.currentTime); g.setValueAtTime(g.value,c.currentTime); g.linearRampToValueAtTime(0,c.currentTime+(state==='playing'?1.2:.4)); }
+function musicFade(to,secs,at){ const c=AU.ctx, g=MUS.gain.gain, t=c.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value,t); if(at) { g.linearRampToValueAtTime(0,t+.22); g.setValueAtTime(0,at); g.linearRampToValueAtTime(to,at+secs); } else g.linearRampToValueAtTime(to,t+secs); }
+function musicTick(){ npRender(); if(!AU.ctx||!MUS.gain) return;
+  const inMenu=state==='menu'||state==='lobby', want=SET.music>0&&inMenu&&!document.hidden&&!MUS.paused, c=AU.ctx;
+  if(want&&!MUS.playing){ MUS.playing=true;
+    // coming back from a match starts the next song; resuming from pause picks up at the start of the current bar
+    if(MUS.advance){ MUS.step=0; musicUseTrack((MUS.trk+1)%TRACKS.length,c.currentTime); } else { MUS.step=Math.floor(MUS.step/16)*16; musicUseTrack(MUS.trk,c.currentTime); }
+    MUS.advance=false; MUS.next=c.currentTime+.1; musicFade(SET.music,MUS.step?.6:2.5); }
+  else if(!want&&MUS.playing){ MUS.playing=false; if(!inMenu) MUS.advance=true; musicFade(0,state==='playing'?1.2:.4); }
 }
 function musicLevel(){ if(MUS.playing&&AU.ctx){ const g=MUS.gain.gain, t=AU.ctx.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(SET.music,t); } }
-// browsers only allow sound after a click, tap or key press
+// back / skip: quick fade, then the other song starts from the top
+function musicSkip(dir){ const n=TRACKS.length; MUS.advance=false;
+  const target=dir<0&&MUS.step>32?MUS.trk:(MUS.trk+dir+n)%n;
+  if(MUS.playing&&AU.ctx&&AU.ctx.state==='running'){ const at=AU.ctx.currentTime+.4; MUS.step=0; MUS.next=at; musicUseTrack(target,at); musicFade(SET.music,.35,at); }
+  else { MUS.step=0; musicUseTrack(target,AU.ctx?AU.ctx.currentTime:0); }
+  MUS.ui=''; }
+function musicTogglePause(){ MUS.paused=!MUS.paused; MUS.ui=''; }
+// now-playing bar (menu and party lobby)
+let NP_ELS=[];
+function npRender(){ const els=NP_ELS; if(!els.length) return; const T=TRACKS[MUS.trk], off=SET.music<=0, locked=!AU.ctx||AU.ctx.state!=='running';
+  const status=off?'Music off in Settings':MUS.paused?'Paused':locked?'Click anywhere to start':'Now playing', prog=Math.min(1,MUS.step/(T.bars*16));
+  const key=[MUS.trk,status,MUS.playing,Math.round(prog*200)].join('|'); if(key===MUS.ui) return; MUS.ui=key;
+  for(const el of els){ el.classList.toggle('on',MUS.playing&&!MUS.paused); el.querySelector('.npname').textContent=T.name; el.querySelector('.npst').textContent=status;
+    el.querySelector('.npn').textContent=(MUS.trk+1)+' / '+TRACKS.length; el.querySelector('.npbar i').style.width=(prog*100).toFixed(1)+'%';
+    const p=el.querySelector('[data-np-act="pause"]'); p.innerHTML=MUS.paused?NP_ICON.play:NP_ICON.pause; p.title=MUS.paused?'Play music':'Pause music'; p.setAttribute('aria-label',p.title);
+    for(const b of el.querySelectorAll('button')) b.disabled=off; } }
+const NP_ICON={prev:'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path fill="currentColor" d="M2 2h2v10H2zM12 2v10L5 7z"/></svg>',
+  next:'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path fill="currentColor" d="M10 2h2v10h-2zM2 2v10l7-5z"/></svg>',
+  pause:'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path fill="currentColor" d="M3 2h3v10H3zM8 2h3v10H8z"/></svg>',
+  play:'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path fill="currentColor" d="M3 2v10l9-5z"/></svg>'};
+// keeps the character button pinned to the info panel's right edge, level with the bottom of Join
+function placeCharBtn(){ const b=$('charBtn'); if(!b) return; if(innerWidth<=900){ b.style.left=b.style.top=''; return; }
+  const g=document.querySelector('.menu-grid').getBoundingClientRect(), j=$('joinBtn').getBoundingClientRect(), info=document.querySelector('.info-col').getBoundingClientRect();
+  if(!j.height) return; b.style.left=(info.right-g.left-b.offsetWidth)+'px'; b.style.top=(j.bottom-g.top-b.offsetHeight)+'px'; }
+function initCharPin(){ placeCharBtn(); addEventListener('resize',placeCharBtn); try{ new ResizeObserver(placeCharBtn).observe(document.querySelector('.menu-grid')); }catch(e){} try{ document.fonts.ready.then(placeCharBtn); }catch(e){} }
+// graphics crash (out of GPU memory): stop on a clear message, switch to Low, and offer a reload
+function initXbox(){
+  renderer.domElement.addEventListener('webglcontextlost',e=>{ e.preventDefault(); const was=SET.gfx; SET.gfx='low'; saveSet();
+    $('gfxlostNote').textContent=IS_XBOX?'On Xbox, closing other apps and browser tabs frees up memory.':was==='low'?'This happened on Low graphics, so this device may not have enough graphics memory for the arena.':'If it happens again, try a smaller browser window.';
+    $('gfxlost').hidden=false; $('xboxhint').hidden=true; try{ touchReleaseAll(); }catch(_){} if(document.pointerLockElement) document.exitPointerLock(); },false);
+  $('gfxReload').onclick=()=>location.reload();
+  if(!IS_XBOX) return;
+  $('xboxNote').hidden=false; setInputMode('pad');
+  addEventListener('pointermove',e=>{ if(Math.abs(e.movementX||0)+Math.abs(e.movementY||0)>1) XB.cursorT=performance.now(); },true);
+}
+// show the hint while the controller is still driving the cursor: the cursor moved more recently than any game input,
+// or a match has run a few seconds without the game hearing from the controller at all
+const XB={padT:-1,cursorT:-1,matchT:-1};
+function updateXboxHint(){ if(!IS_XBOX) return; const t=performance.now();
+  if(state==='playing'){ if(XB.matchT<0) XB.matchT=t; } else XB.matchT=-1;
+  const h=state==='playing'&&$('gfxlost').hidden&&((XB.cursorT>XB.padT&&t-XB.cursorT<6000)||(XB.padT<XB.matchT&&t-XB.matchT>3000));
+  if($('xboxhint').hidden===h) $('xboxhint').hidden=!h; }
+function initNowPlaying(){ NP_ELS=Array.from(document.querySelectorAll('[data-np]')); for(const el of NP_ELS){
+    el.querySelector('[data-np-act="prev"]').innerHTML=NP_ICON.prev; el.querySelector('[data-np-act="next"]').innerHTML=NP_ICON.next;
+    for(const b of el.querySelectorAll('[data-np-act]')) b.addEventListener('click',()=>{ audioInit(); const a=b.dataset.npAct; if(a==='pause') musicTogglePause(); else musicSkip(a==='next'?1:-1); }); }
+  MUS.ui=''; npRender(); }
+// browsers only allow sound after a click, tap, or key press
 for(const ev of ['pointerdown','keydown','touchend']) addEventListener(ev,()=>{ if(state==='menu'||state==='lobby') audioInit(); },{capture:true,passive:true});
 function voice(vol,pan){ const ctx=AU.ctx; const g=ctx.createGain(); g.gain.value=0; if(ctx.createStereoPanner){ const p=ctx.createStereoPanner(); p.pan.value=clamp(pan||0,-1,1); g.connect(p); p.connect(AU.master);} else g.connect(AU.master); return g; }
 function noiseBurst(dest,type,freq,q,t0,dur){ const ctx=AU.ctx, s=ctx.createBufferSource(); s.buffer=AU.noise; s.loop=true; s.playbackRate.value=rand(.9,1.1); const f=ctx.createBiquadFilter(); f.type=type; f.frequency.value=freq; f.Q.value=q; s.connect(f); f.connect(dest); s.start(t0,rand(0,.5)); s.stop(t0+dur+.05); return f; }
@@ -2167,7 +2328,7 @@ function destroyBlock(x,y,z,fx){
 }
 const NB6=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
 // Load-bearing materials: concrete, steel, floor slabs, crates. Panels, glass, metal
-// siding, grating and ladders never hold anything up: cut the structure and they fall with it.
+// siding, grating, and ladders never hold anything up: cut the structure and they fall with it.
 function floodFloating(i,structOnly){
   const id=++markId; let sp=0, count=0; STACK[sp++]=i; mark[i]=id; const cells=[];
   const ok=n=>grid[n]&&mark[n]!==id&&(!structOnly||STRUCT[grid[n]]);
@@ -3027,7 +3188,7 @@ function loadPeer(){
 }
 function netErrText(err){ const t=err&&err.type;
   if(t==='peer-unavailable') return "Couldn't find that party. Check the code, and that the host still has the lobby open.";
-  if(t==='browser-incompatible') return "This page can't open peer-to-peer connections. In the claude.ai preview that's expected: open the game from itch.io, GitHub Pages or the downloaded file. Otherwise, try an up-to-date Chrome, Edge, Firefox or Safari.";
+  if(t==='browser-incompatible') return "This page can't open peer-to-peer connections. In the claude.ai preview that's expected: open the game from itch.io, GitHub Pages, or the downloaded file. Otherwise, try an up-to-date Chrome, Edge, Firefox, or Safari.";
   if(t==='network'||t==='server-error'||t==='socket-error'||t==='socket-closed'||t==='ssl-unavailable') return BLOCKED_MSG;
   return `Connection failed (${t||err}).`; }
 function partyMsg(t){ $('partyMsg').textContent=t||''; }
@@ -3147,7 +3308,7 @@ function goMatch(force){
 function enterPlaying(){
   audioInit(); state='playing'; last=performance.now(); acc=0; NET.menuOpen=false;
   $('menu').hidden=true; $('lobby').hidden=true; $('end').hidden=true; $('pause').hidden=true; $('hud').hidden=false; $('fps').hidden=SET.fps!=='on'; showLoading(null);
-  if(!noLock&&inputMode!=='pad'&&inputMode!=='touch') $('lockhint').style.display='block';
+  if(!noLock&&!IS_XBOX&&inputMode!=='pad'&&inputMode!=='touch') $('lockhint').style.display='block';
   if(padFocus){ padFocus.classList.remove('padfocus'); padFocus=null; }
   announce(MAP.name,MAP.meta+' · find the cache',null,true);
 }
@@ -3602,7 +3763,7 @@ function syncMeshes(dt){
    ===================================================================== */
 function applyGfx(){
   const q=SET.gfx, hq=q==='high'&&post.ok;
-  renderer.setPixelRatio(q==='low'?1:Math.min(window.devicePixelRatio||1,q==='high'?1.5:1.25));
+  renderer.setPixelRatio(q==='low'?(IS_XBOX?.8:1):Math.min(window.devicePixelRatio||1,q==='high'?1.5:1.25));
   renderer.shadowMap.enabled=q!=='low'; sun.castShadow=q!=='low';
   renderer.toneMapping=hq?THREE.NoToneMapping:THREE.ACESFilmicToneMapping;
   renderer.outputEncoding=hq?THREE.LinearEncoding:THREE.sRGBEncoding;
@@ -3644,6 +3805,7 @@ function frame(t){
   updateCamera(dt);
   if(state==='playing') updateHUD(dt);
   updateTouchHUD();
+  updateXboxHint();
   musicTick();
   render();
   if(DEBUG){ dbgT+=dt; if(dbgT>.5){ dbgT=0; const inf=renderer.info; let live=0; for(let i=0;i<smoke.cap;i++) if(smoke.life[i]>0) live++;
@@ -3686,8 +3848,8 @@ function initTouch(){
   const root=$('touch'), zone=$('tZone');
   const opt={passive:false};
   // any touch anywhere switches the game into touch mode
-  addEventListener('pointerdown',e=>{ if(e.pointerType==='touch') setInputMode('touch'); },true);
-  addEventListener('touchstart',()=>setInputMode('touch'),{passive:true,capture:true});
+  addEventListener('pointerdown',e=>{ if(e.pointerType==='touch'&&!IS_XBOX) setInputMode('touch'); },true);
+  addEventListener('touchstart',()=>{ if(!IS_XBOX) setInputMode('touch'); },{passive:true,capture:true});
   zone.addEventListener('pointerdown',e=>{
     if(e.pointerType==='mouse') return; e.preventDefault(); try{ zone.setPointerCapture(e.pointerId); }catch(_){}
     if(e.clientX<innerWidth*.42&&!TOUCH.stick){
@@ -3767,7 +3929,7 @@ function pollPad(dt){
   const prev=PAD.lastBtn, down=i=>btn[i]&&!prev[i], up=i=>!btn[i]&&prev[i];
   if(bindCapture){ for(let i=0;i<16;i++) if(down(i)){ setInputMode('pad'); if(bindCapture.slot==='pad'){ if(i===9) endCapture('Cancelled'); else assignPad(i); } else if(i===9||i===1) endCapture('Cancelled'); break; } PAD.lastBtn=btn; return; }
   const [mx,my]=stick(gp.axes[0]||0,gp.axes[1]||0), [lx,ly]=stick(gp.axes[2]||0,gp.axes[3]||0);
-  if(btn.some((b,i)=>b&&!prev[i])||Math.abs(mx)+Math.abs(my)+Math.abs(lx)+Math.abs(ly)>.2) setInputMode('pad');
+  if(btn.some((b,i)=>b&&!prev[i])||Math.abs(mx)+Math.abs(my)+Math.abs(lx)+Math.abs(ly)>.2){ setInputMode('pad'); XB.padT=performance.now(); }
   if(state==='playing'){
     PAD.move.x=mx; PAD.move.y=my; PAD.look.x=lx; PAD.look.y=ly;
     const PB=SET.binds.pad, B=a=>{ const i=PB[a]; return i>=0?i:-1; }, on=i=>i>=0&&btn[i];
@@ -3787,7 +3949,7 @@ function pollPad(dt){
   PAD.lastBtn=btn;
 }
 // aim assist: never locks on. Slows the stick near a target (friction) and nudges the aim
-// toward it only while you are already moving, aiming or firing (rotation assist).
+// toward it only while you are already moving, aiming, or firing (rotation assist).
 function assistTarget(a){
   const [yaw,pitch]=aimAngles(a), f=forwardOf(yaw,pitch); let best=null;
   for(const b of actors){ if(!b.alive||b.team===a.team) continue;
@@ -3849,7 +4011,7 @@ function lockPointer(){ if(noLock) return; try{ const p=cvs.requestPointerLock()
 document.addEventListener('pointerlockchange',()=>{ if(document.pointerLockElement===cvs){ $('lockhint').style.display='none'; } else if(state==='playing') pause(); });
 document.addEventListener('pointerlockerror',()=>{ noLock=true; $('lockhint').style.display='none'; });
 cvs.addEventListener('mousedown',e=>{ if(state!=='playing') return; if(!noLock&&document.pointerLockElement!==cvs){ lockPointer(); return; } });
-// one place that turns a canonical action code on or off (keyboard, mouse or rebinding)
+// one place that turns a canonical action code on or off (keyboard, mouse, or rebinding)
 function actionDown(c,repeat){ if(!repeat) edges.add(c); keys.add(c);
   if(c==='Mouse0'){ mouseL=true; if(!repeat) mouseLEdge=true; } if(c==='Mouse2') mouseR=true; if(c==='KeyE') kbE=true;
   if(c==='Tab'&&state==='playing'){ $('board').hidden=false; renderBoard(); } }
@@ -3936,7 +4098,7 @@ function renderBalance(){
   <p class="note">Seconds, body shots / every shot a headshot. Generated live from the game's own tuning table, so this sheet can't drift from what you play.</p>
   <div class="tbl-wrap"><table><tr><th>Weapon</th><th>RPM</th><th>Damage</th><th>DPS</th><th>Range</th>${cl.map(c=>`<th>vs ${c.name}</th>`).join('')}</tr>${rows}</table></div>
   <h4>Optics</h4>
-  <p class="note">The Overclock Open gunsmith. Every gun has a standard optic (its balance sheet numbers above); swapping scales its aim time, move speed and aimed spread by these ratios. Shotgun pellet spread is never tightened.</p>
+  <p class="note">The Overclock Open gunsmith. Every gun has a standard optic (its balance sheet numbers above); swapping scales its aim time, move speed, and aimed spread by these ratios. Shotgun pellet spread is never tightened.</p>
   <div class="tbl-wrap"><table><tr><th>Optic</th><th>Zoom</th><th>Aim time</th><th>Move while aiming</th><th>Aimed spread</th><th>Standard on</th></tr>${Object.entries(OPTICS).map(([k,O])=>`<tr><td>${O.name}</td><td>${opticMag(k).toFixed(1)}x</td><td>${Math.round(O.ads*1000)} ms</td><td>${Math.round(O.move*100)}%</td><td>×${O.spread}</td><td>${Object.keys(HOME_OPTIC).filter(w=>HOME_OPTIC[w]===k&&!WEAPONS[w].melee).map(w=>WEAPONS[w].name).join(', ')||'—'}</td></tr>`).join('')}</table></div>
   <h4>Survivability per hitbox</h4>
   <div class="tbl-wrap"><table><tr><th>Build</th><th>HP</th><th>Hitbox (m²)</th><th>HP per m²</th><th>Sprint</th></tr>${cl.map(c=>`<tr><td>${c.name}</td><td>${c.hp}</td><td>${(2*c.r*c.h).toFixed(2)}</td><td>${Math.round(c.hp/(2*c.r*c.h))}</td><td>${c.sprint} m/s</td></tr>`).join('')}</table></div>
@@ -3966,11 +4128,11 @@ genTextures(); buildMaterials();
 debris=new Particles(1600,.17,false,1); sparks=new Particles(500,.05,true,.35); smoke=new Smoke(900); smoke.mat.uniforms.tSprite.value=TEX.smoke; decals=new Decals(400); decals.mesh.material.map=TEX.hole; decals.mesh.material.needsUpdate=true;
 if(!MAPS[SET.map]) SET.map='downtown';
 if(!['high','medium','low'].includes(SET.gfx)) SET.gfx='high';
-renderMaps(); renderClasses(); renderBalance(); initSettings(); initParty(); initBinds(); initCustom(); initTouch(); refreshGlyphs();
+renderMaps(); renderClasses(); renderBalance(); initSettings(); initParty(); initBinds(); initCustom(); initTouch(); initNowPlaying(); initCharPin(); initXbox(); refreshGlyphs();
 loadMap(SET.map); $('loading').hidden=true;
 if(document.fonts&&document.fonts.ready&&document.fonts.ready.then) document.fonts.ready.then(()=>{ if(state==='menu') buildEnvironment(); });
 resize(); requestAnimationFrame(frame);
-window.OVERWRITE={get state(){return state;},set state(v){state=v;},start,step,newMatch,loadMap,actors,OBJ,TEAMS,grid,I,explode,GADGETS,chunks,get player(){return player;},get MAP(){return MAP;},MAPS,MAT,structuralPass,keys,edges,findPath,walkable,onLadder,SET,collides,NET,startMatch,hostParty,joinParty,hostStart,leaveParty,worldHash,frame:t=>frame(t),get matchT(){return matchT;},set matchT(v){matchT=v;},$,cleanName,fireWeapon,rewindActors,restoreActors,clientStep,TEAMS_:TEAMS,get now(){return now;},themes:{THEMES,applyTheme},music:{MUS,AU,musicStep,musicSetup,musicUseTrack,TRACKS},touch:{TOUCH,updateTouchHUD,get inputMode(){return inputMode;}},binds:{startCapture,assignKb,assignPad,canon,bindLabel,DEF_PAD},DIFF,gear:{weaponWithGear,HOME_OPTIC,OPTICS,makeGun,WEAPONS,opticMag}};
+window.OVERWRITE={get state(){return state;},set state(v){state=v;},start,step,newMatch,loadMap,actors,OBJ,TEAMS,grid,I,explode,GADGETS,chunks,get player(){return player;},get MAP(){return MAP;},MAPS,MAT,structuralPass,keys,edges,findPath,walkable,onLadder,SET,collides,NET,startMatch,hostParty,joinParty,hostStart,leaveParty,worldHash,frame:t=>frame(t),get matchT(){return matchT;},set matchT(v){matchT=v;},$,cleanName,fireWeapon,rewindActors,restoreActors,clientStep,TEAMS_:TEAMS,get now(){return now;},themes:{THEMES,applyTheme},music:{MUS,AU,musicStep,musicSetup,musicUseTrack,TRACKS,musicSkip,musicTogglePause},touch:{TOUCH,updateTouchHUD,get inputMode(){return inputMode;}},xbox:{get IS_XBOX(){return IS_XBOX;},renderer},binds:{startCapture,assignKb,assignPad,canon,bindLabel,DEF_PAD},DIFF,gear:{weaponWithGear,HOME_OPTIC,OPTICS,makeGun,WEAPONS,opticMag}};
 })();
 </script>
 </body>
